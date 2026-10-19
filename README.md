@@ -126,7 +126,7 @@ ZHIPU_API_KEY=你的智谱密钥
 LLM_MODEL_ID=glm-4-flash
 ```
 
-也可通过 `LLM_PROVIDER` 手动指定提供商。显式传入构造参数 `provider` 的优先级最高。若专属密钥与另一家服务的 URL 同时配置，专属密钥优先；需要切换时请显式指定 `provider` 或移除不使用的专属密钥。
+也可通过 `LLM_PROVIDER` 手动指定提供商，显式传入构造参数 `provider` 的优先级最高。自动识别时服务地址优先于密钥；如果想覆盖自动判断，请显式设置 `LLM_PROVIDER` 或传入 `provider`。
 
 ## 第 7.3 节：框架接口
 

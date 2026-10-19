@@ -1,0 +1,16 @@
+[project]
+name = "hello-agents-chapter4"
+version = "0.1.0"
+description = "《Hello-Agents》第四章：智能体经典范式构建（ReAct / Plan-and-Solve / Reflection）"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "openai>=1.40.0",
+    "python-dotenv>=1.0.0",
+    "google-search-results>=2.4.2",
+    "hello-agents==0.1.1",
+    "pydantic>=2.0",
+]
+
+[tool.uv]
+package = false

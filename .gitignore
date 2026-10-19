@@ -1,0 +1,19 @@
+# 环境变量
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.uv/
+node_modules/
+{{pkgetc}}/
+
+# macOS
+.DS_Store
+
+# 编辑器
+.idea/
+.vscode/

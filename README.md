@@ -37,10 +37,10 @@
 
 ## 运行
 
-需要 Python 3.10 及以上版本。安装依赖：
+需要 Python 3.10 及以上版本和 `uv`。在项目根目录安装依赖；已有 `.env` 时保留原配置：
 
 ```bash
-cp .env.example .env
+test -f .env || cp .env.example .env
 uv sync
 ```
 
@@ -59,39 +59,114 @@ ollama pull llama3:8b
 uv run python local_model.py "请用中文简单介绍一下自己"
 ```
 
-第四章的搜索版 ReAct 示例使用 `.env` 中的 `SERPAPI_API_KEY`。第 7.5 节的多源搜索可配置 SerpApi、Tavily 或两者；使用 Tavily 时需在虚拟环境中安装可选包 `tavily-python`。其他示例不需要搜索密钥。
+第四章的搜索版 ReAct 示例使用 `.env` 中的 `SERPAPI_API_KEY`。第 7.5 节的多源搜索可配置 SerpApi、Tavily 或两者。不使用的搜索密钥请留空或注释掉，避免把 `.env.example` 中的占位符当作有效配置。
+
+| 运行内容 | 模型 API | 搜索 API |
+| --- | --- | --- |
+| 自定义计算器、计算器并行执行 | 不需要 | 不需要 |
+| `test_simple_agent.py` 对话与工具调用 | 需要配置可用模型 | 不需要 |
+| 搜索摘要工具链 | 不需要 | 需要 SerpApi 或 Tavily |
+
+### 运行 Agent 对话与工具调用示例
+
+配置好 `.env` 中的模型服务后执行：
 
 ```bash
-uv pip install --python .venv/bin/python tavily-python
+uv run python test_simple_agent.py
 ```
+
+这个脚本依次运行普通对话、工具增强对话、流式响应和动态添加工具，会实际请求模型。计算示例的问题是 `15 * 8 + 32`，结果为 `152`；模型按提示输出工具调用标记时，终端会显示检测到工具调用及执行结果。这里使用的是 SDK 的 `CalculatorTool`，原生 `tools` 接口的实现另见 `my_function_call_agent.py`。
 
 ## 第 7.5 节工具系统示例
 
-```python
+### 本地运行自定义计算器
+
+直接执行以下命令即可查看注册工具并按名称调用的过程，不需要填写任何 API 密钥：
+
+```bash
+uv run python my_calculator_tool.py
+```
+
+预期包含以下输出：
+
+```text
+2 + 3 * 4 = 14
+sqrt(16) + pi = 7.141592653589793
+```
+
+`ToolRegistry` 保存工具名、说明和工具对象或函数引用，并提供查找、说明生成及调用分发。计算逻辑在 `my_calculate()` 中，工具对象的实现则放在自己的 `run()` 中。上面的入口调用 `registry.execute_tool("my_calculator", expression)`，由注册表找到计算函数并执行；模型自动选择工具的流程见前面的 Agent 示例。
+
+### 本地运行并行工具任务
+
+在终端完整复制执行以下命令。两个计算任务相互独立，不请求模型或搜索服务：
+
+```bash
+uv run python - <<'PY'
 import asyncio
 
 from async_tool_executor import AsyncToolExecutor
+from my_calculator_tool import create_calculator_registry
+
+
+async def main():
+    registry = create_calculator_registry()
+    with AsyncToolExecutor(registry, max_workers=2) as executor:
+        results = await executor.execute_tools_parallel([
+            {"tool_name": "my_calculator", "input_data": "15 * 8 + 32"},
+            {"tool_name": "my_calculator", "input_data": "sqrt(16) + 2 * 3"},
+        ])
+    print(results)
+
+
+asyncio.run(main())
+PY
+```
+
+预期结果是 `['152', '10.0']`，返回顺序与输入任务顺序一致。
+
+### 运行搜索摘要工具链
+
+先在 `.env` 填写真实的 `SERPAPI_API_KEY`，再完整执行下面的终端命令：
+
+```bash
+uv run python - <<'PY'
+from dotenv import load_dotenv
+
 from my_advanced_search import create_advanced_search_registry
-from my_calculator_tool import register_calculator
 from tool_chain_manager import ToolChainManager, create_search_digest_chain
 
-registry = create_advanced_search_registry()
-register_calculator(registry)
+load_dotenv(".env")
+registry = create_advanced_search_registry(backend="serpapi")
 
 # 三步工具链：网页搜索 -> 筛选结果 -> 格式化摘要
 chains = ToolChainManager(registry)
 chains.register_chain(create_search_digest_chain())
 print(chains.execute_chain("search_digest", "Python 3.14 新特性"))
+PY
+```
 
-# 适合并行执行的独立任务
-async def run_parallel():
-    with AsyncToolExecutor(registry, max_workers=4) as executor:
-        return await executor.execute_tools_parallel([
-            {"tool_name": "my_calculator", "input_data": "sqrt(16) + 2 * 3"},
-            {"tool_name": "advanced_search", "input_data": "Python asyncio"},
-        ])
+结果是包含网页摘要、链接及来源的文本，内容取决于搜索服务的实时响应。这一步会联网使用搜索 API；摘要处理是本地整理搜索结果，不额外请求 LLM。
 
-print(asyncio.run(run_parallel()))
+使用 Tavily 时，配置 `TAVILY_API_KEY`，把示例中的 `backend="serpapi"` 改为 `backend="tavily"`，并把命令首行中的 `uv run python` 替换为 `uv run --with tavily-python python`。`--with tavily-python` 会为这次运行补充 Tavily 依赖。若希望同时查询已配置的两个来源，使用 `backend="hybrid"`，并确保相应密钥和依赖都可用。
+
+## 提交与同步
+
+以修改 `README.md` 为例，在项目根目录执行；提交其他文件时，相应替换 `git add` 后的文件名：
+
+```bash
+git status
+git add README.md
+git commit -m "说明本次修改"
+git push
+```
+
+`git commit` 在本地生成提交，`git push` 把尚未同步的提交上传到远端。如果提示 `Everything up-to-date`，表示没有新提交需要推送；未执行 `git add` 和 `git commit` 的文件修改不会随 `git push` 上传。
+
+GitHub 文件列表中的相对时间表示该文件最后一次修改所对应的提交时间，仓库顶部显示最新提交的时间。推送已有提交不会把它的时间改为推送时刻，未修改的文件也会保留较早的时间。核对同步状态时可以比较下面两条命令输出的提交号：
+
+```bash
+git rev-parse HEAD
+git ls-remote origin refs/heads/main
 ```
 
 ## 主要入口

@@ -1,7 +1,7 @@
 [project]
 name = "hello-agents-chapter4"
 version = "0.1.0"
-description = "《Hello-Agents》第四章：智能体经典范式构建（ReAct / Plan-and-Solve / Reflection）"
+description = "《Hello-Agents》章节练习：智能体范式、框架适配与工具系统"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

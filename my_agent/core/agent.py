@@ -3,9 +3,9 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from config import Config
-from llm_client import HelloAgentsLLM
-from message import Message
+from my_agent.core.config import Config
+from my_agent.llm.client import HelloAgentsLLM
+from my_agent.core.message import Message
 
 
 class Agent(ABC):

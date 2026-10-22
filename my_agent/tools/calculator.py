@@ -99,9 +99,3 @@ def register_calculator(registry: ToolRegistry) -> ToolRegistry:
 def create_calculator_registry() -> ToolRegistry:
     """创建只包含计算器的工具注册表。"""
     return register_calculator(ToolRegistry())
-
-
-if __name__ == "__main__":
-    registry = create_calculator_registry()
-    for expression in ("2 + 3 * 4", "sqrt(16) + pi"):
-        print(f"{expression} = {registry.execute_tool('my_calculator', expression)}")

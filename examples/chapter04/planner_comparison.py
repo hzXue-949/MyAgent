@@ -11,9 +11,9 @@ Planner 提示词 A/B 对比实验
 import ast
 import re
 
-from llm_client import HelloAgentsLLM
+from my_agent.llm.client import HelloAgentsLLM
 
-# A 组：与 Plan_and_solve.py 完全一致
+# A 组：与 chapter04/plan_and_solve.py 的 Planner 提示词一致
 PROMPT_A = """
 你是一个顶级的AI规划专家。你的任务是将用户提出的复杂问题分解成一个由多个简单步骤组成的行动计划。
 请确保计划中的每个步骤都是一个独立的、可执行的子任务，并且严格按照逻辑顺序排列。

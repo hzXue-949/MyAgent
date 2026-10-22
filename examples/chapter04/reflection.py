@@ -7,7 +7,7 @@
 
 from typing import Any, Dict, List, Optional
 
-from llm_client import HelloAgentsLLM
+from my_agent.llm.client import HelloAgentsLLM
 
 INITIAL_PROMPT_TEMPLATE = """
 你是一位资深的Python程序员。请根据以下要求，编写一个Python函数。

@@ -10,6 +10,7 @@ venv/
 .uv/
 node_modules/
 {{pkgetc}}/
+data/
 
 # macOS
 .DS_Store

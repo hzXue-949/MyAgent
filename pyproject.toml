@@ -1,7 +1,7 @@
 [project]
 name = "hello-agents-chapter4"
 version = "0.1.0"
-description = "《Hello-Agents》章节练习：智能体范式、框架适配与工具系统"
+description = "《Hello-Agents》学习项目：智能体范式、工具系统与记忆系统"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -10,6 +10,15 @@ dependencies = [
     "google-search-results>=2.4.2",
     "hello-agents==0.1.1",
     "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+memory-cloud = [
+    "qdrant-client>=1.14.0",
+    "neo4j>=5.20.0",
+]
+memory-local = [
+    "fastembed>=0.7.0,<1",
 ]
 
 [tool.uv]

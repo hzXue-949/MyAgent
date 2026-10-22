@@ -8,8 +8,8 @@
 import re
 from datetime import date
 
-from llm_client import HelloAgentsLLM
-from tools import ToolExecutor, search
+from my_agent.llm.client import HelloAgentsLLM
+from my_agent.tools.legacy import ToolExecutor, search
 
 # ReAct 提示词模板
 REACT_PROMPT_TEMPLATE = """

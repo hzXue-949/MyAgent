@@ -1,4 +1,3 @@
-# my_react_agent.py
 import re
 from typing import Optional, List, Tuple
 from hello_agents import ReActAgent, HelloAgentsLLM, Config, Message, ToolRegistry
